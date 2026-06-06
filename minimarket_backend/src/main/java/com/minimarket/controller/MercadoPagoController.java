@@ -134,7 +134,7 @@ public class MercadoPagoController {
 
     /**
      * Endpoint alternativo para webhook (Webhooks v2 - body JSON directo)
-     * 
+     * ✅ CORREGIDO: Manejo robusto de excepciones y siempre retorna 200 OK
      */
     @PostMapping("/webhook/notificacion")
     public ResponseEntity<String> recibirNotificacionAlternativa(
@@ -142,13 +142,28 @@ public class MercadoPagoController {
 
         logger.info("Webhook alternativo recibido: {}", notification);
 
-        if (notification != null && notification.getData() != null) {
-            String paymentId = notification.getData().getId();
-            String type = notification.getType();
+        try {
+            // ✅ Validar que tiene datos mínimos requeridos
+            if (notification != null && notification.getData() != null) {
+                String paymentId = notification.getData().getId();
+                String type = notification.getType();
 
-            mercadoPagoService.procesarNotificacion(paymentId, type);
+                if (paymentId != null && !paymentId.isBlank() && type != null) {
+                    logger.debug("Procesando webhook - Type: {}, PaymentID: {}", type, paymentId);
+                    mercadoPagoService.procesarNotificacion(paymentId, type);
+                } else {
+                    logger.warn("Webhook sin datos suficientes - PaymentID: {}, Type: {}", paymentId, type);
+                }
+            } else {
+                logger.warn("Webhook alternativo sin body válido");
+            }
+        } catch (Exception e) {
+            logger.error("Error procesando webhook alternativo: {}", e.getMessage(), e);
+            // No relanzar excepción - siempre retornar 200 OK
         }
 
+        // ✅ IMPORTANTE: SIEMPRE retornar 200 OK rápidamente
+        // Mercado Pago no reintentar si recibe 200, aunque haya tenido error
         return ResponseEntity.ok("OK");
     }
 

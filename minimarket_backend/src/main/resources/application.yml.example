@@ -1,0 +1,138 @@
+# ========================================================================
+# ARCHIVO DE CONFIGURACIÓN: application.yml
+# ========================================================================
+#
+# UBICACIÓN: src/main/resources/application.yml
+#
+# Este archivo contiene la configuración para Mercado Pago y otros
+# servicios del backend.
+#
+# ========================================================================
+# INSTRUCCIONES PARA AGREGAR CREDENCIALES DE MERCADO PAGO
+# ========================================================================
+#
+# 1. Abre: src/main/resources/application.yml
+#
+# 2. Localiza la sección "mercadopago:" (o créala si no existe)
+#
+# 3. Reemplaza los valores con TUS CREDENCIALES:
+#    - Obtén tus credenciales desde:
+#      https://www.mercadopago.com.pe/developers/panel
+#
+# 4. Para desarrollo, usa CREDENCIALES DE PRUEBA (Sandbox)
+#
+# ========================================================================
+
+# ========================================================================
+# CONFIGURACIÓN DE MERCADO PAGO
+# ========================================================================
+mercadopago:
+  # ====================================================================
+  # CREDENCIALES - REEMPLAZA ESTOS VALORES
+  # ====================================================================
+  
+  # Copia desde: https://www.mercadopago.com.pe/developers/panel
+  # Sección: Credenciales → Sandbox (para testing)
+  # Campo: Access Token (comienza con APP_USR-...)
+  access-token: "YOUR_ACCESS_TOKEN_HERE"
+  
+  # Copia desde: https://www.mercadopago.com.pe/developers/panel
+  # Sección: Credenciales → Sandbox (para testing)
+  # Campo: Public Key (comienza con APP_USR-...)
+  public-key: "YOUR_PUBLIC_KEY_HERE"
+
+  # ====================================================================
+  # MODO DE OPERACIÓN
+  # ====================================================================
+  
+  # true = Sandbox (testing)
+  # false = Production (DINERO REAL)
+  # MANTÉN EN true MIENTRAS DESARROLLAS
+  sandbox: true
+
+  # ====================================================================
+  # URLs DE RETORNO DEL CLIENTE
+  # ====================================================================
+  # El cliente será redirigido a estas URLs después de pagar en MP
+  
+  # URL cuando el pago es EXITOSO
+  success-url: "http://localhost:3000/pago-exitoso"
+  
+  # URL cuando el pago FALLA o es RECHAZADO
+  failure-url: "http://localhost:3000/pago-fallido"
+  
+  # URL cuando el pago está PENDIENTE (no confirmado aún)
+  pending-url: "http://localhost:3000/pago-pendiente"
+
+  # ====================================================================
+  # URL DE WEBHOOK (IPN - Instant Payment Notification)
+  # ====================================================================
+  # Mercado Pago enviará notificaciones a esta URL cuando ocurran cambios
+  
+  # Para DESARROLLO (localhost no es accesible desde internet)
+  # Usa ngrok: https://ngrok.com/
+  # 1. Descarga e instala ngrok
+  # 2. Ejecuta: ngrok http 8080
+  # 3. Usa la URL que genera ngrok (ej: https://xxxx.ngrok.io)
+  # 4. Reemplaza "localhost:8080" con la URL de ngrok
+  notification-url: "http://localhost:8080/api/mercadopago/webhook"
+
+  # ====================================================================
+  # EXPIRACIÓN DE LA PREFERENCIA DE PAGO
+  # ====================================================================
+  # Minutos que el cliente tiene para completar el pago
+  expiration-minutes: 30
+
+# ========================================================================
+# CONFIGURACIÓN ALTERNATIVA CON VARIABLES DE ENTORNO
+# ========================================================================
+#
+# Para PRODUCCIÓN y mayor seguridad, usa variables de entorno:
+#
+# Opción 1: En application.yml
+# mercadopago:
+#   access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+#   public-key: ${MERCADOPAGO_PUBLIC_KEY}
+#
+# Opción 2: Variables del sistema operativo
+# - Crear variable: MERCADOPAGO_ACCESS_TOKEN
+# - Crear variable: MERCADOPAGO_PUBLIC_KEY
+#
+# Opción 3: En application-prod.properties
+# mercadopago.access-token=your_production_token
+#
+# ========================================================================
+
+# ========================================================================
+# OTROS SERVICIOS (EJEMPLO)
+# ========================================================================
+
+spring:
+  application:
+    name: minimarket-backend
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  
+  datasource:
+    url: jdbc:mysql://localhost:3306/minimarket_db
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# ========================================================================
+# LOGS
+# ========================================================================
+
+logging:
+  level:
+    com.minimarket: DEBUG
+    com.mercadopago: INFO
+    root: INFO

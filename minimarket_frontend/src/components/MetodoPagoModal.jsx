@@ -3,6 +3,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { getMetodosPagoPublic, finalizarVentaPublico } from '../api/api';
 import { useCart } from '../hooks/useCart';
 import { useNavigate } from 'react-router-dom';
+import './MetodoPagoModal.css'; // Estilos modernos
 
 const MetodoPagoModal = ({ show, onClose }) => {
     const { carrito, total, limpiarCarrito } = useCart();
@@ -40,7 +41,6 @@ const MetodoPagoModal = ({ show, onClose }) => {
             return;
         }
 
-        // Para YAPE/PLIN se requiere referencia
         if (esOfflineConRef && !referencia.trim()) {
             setError('Referencia obligatoria para ' + selectedMetodo.nombre);
             return;
@@ -65,18 +65,13 @@ const MetodoPagoModal = ({ show, onClose }) => {
             // CASO 1: Mercado Pago → redirigir al checkout externo
             // =====================================================
             if (response.estado === 'REDIRECCION' && response.redirectUrl) {
-                // Guardar el carrito y datos de la venta en sessionStorage
-                // para recuperarlos cuando el usuario vuelva del flujo de MP
                 sessionStorage.setItem('mp_carrito', JSON.stringify(carrito));
                 sessionStorage.setItem('mp_total', String(total));
                 sessionStorage.setItem('mp_ventaId', String(response.ventaId));
                 sessionStorage.setItem('mp_metodoPago', selectedMetodo.nombre);
 
-                // Limpiar carrito del contexto y cerrar modal
                 limpiarCarrito();
                 onClose();
-
-                // Redirigir al checkout de Mercado Pago
                 window.location.href = response.redirectUrl;
                 return;
             }
@@ -104,105 +99,186 @@ const MetodoPagoModal = ({ show, onClose }) => {
 
     if (!show) return null;
 
-    return (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <div className="modal-dialog">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">Seleccionar Método de Pago</h5>
-                        <button type="button" className="btn-close" onClick={onClose}></button>
-                    </div>
-                    <div className="modal-body">
-                        {loading && <div className="text-center">Cargando...</div>}
-                        {error && <div className="alert alert-danger">{error}</div>}
+    const getMetodoIcon = (nombre) => {
+        switch(nombre) {
+            case 'MERCADO_PAGO': return '💳';
+            case 'YAPE': return '📱';
+            case 'PLIN': return '📲';
+            case 'EFECTIVO': return '💵';
+            default: return '💰';
+        }
+    };
 
-                        {!loading && metodos.length > 0 && (
-                            <>
-                                <div className="mb-3">
+    const getMetodoLabel = (nombre) => {
+        switch(nombre) {
+            case 'MERCADO_PAGO': return 'Mercado Pago';
+            case 'YAPE': return 'Yape';
+            case 'PLIN': return 'Plin';
+            case 'EFECTIVO': return 'Efectivo';
+            default: return nombre;
+        }
+    };
+
+    return (
+        <div className="payment-modal-overlay" onClick={onClose}>
+            <div className="payment-modal-container" onClick={(e) => e.stopPropagation()}>
+                <style>{`
+                    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Archivo+Black&display=swap');
+                `}</style>
+
+                {/* Encabezado */}
+                <div className="payment-modal-header">
+                    <h2 className="payment-modal-title">Caja Rápida de Pago</h2>
+                    <button className="payment-modal-close" onClick={onClose}>
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                {/* Contenido Principal */}
+                <div className="payment-modal-content">
+                    {loading && (
+                        <div className="payment-loading">
+                            <div className="spinner"></div>
+                            <p>Cargando métodos de pago...</p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="payment-error-banner">
+                            <span>⚠️ {error}</span>
+                        </div>
+                    )}
+
+                    {!loading && metodos.length > 0 && (
+                        <div className="payment-modal-grid">
+                            {/* COLUMNA IZQUIERDA: Métodos de Pago */}
+                            <div className="payment-methods-section">
+                                <h3 className="section-title">Elige tu método</h3>
+                                <div className="payment-methods-grid">
                                     {metodos.map(metodo => (
-                                        <div key={metodo.id} className="form-check mb-2">
+                                        <div
+                                            key={metodo.id}
+                                            className={`payment-method-card ${selectedMetodo?.id === metodo.id ? 'active' : ''}`}
+                                            onClick={() => {
+                                                setSelectedMetodo(metodo);
+                                                setReferencia('');
+                                                setError('');
+                                            }}
+                                        >
                                             <input
-                                                className="form-check-input"
                                                 type="radio"
                                                 name="metodoPago"
                                                 id={`metodo-${metodo.id}`}
                                                 value={metodo.id}
                                                 checked={selectedMetodo?.id === metodo.id}
-                                                onChange={() => {
-                                                    setSelectedMetodo(metodo);
-                                                    setReferencia('');
-                                                    setError('');
-                                                }}
+                                                style={{ display: 'none' }}
                                             />
-                                            <label className="form-check-label" htmlFor={`metodo-${metodo.id}`}>
-                                                {metodo.nombre === 'MERCADO_PAGO' ? '💳 Mercado Pago (tarjeta / QR)' : metodo.nombre}
-                                            </label>
+                                            <span className="method-icon">{getMetodoIcon(metodo.nombre)}</span>
+                                            <span className="method-label">{getMetodoLabel(metodo.nombre)}</span>
+                                            {selectedMetodo?.id === metodo.id && (
+                                                <span className="checkmark">✓</span>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
 
-                                {/* Aviso informativo para Mercado Pago */}
-                                {esMercadoPago && (
-                                    <div className="alert alert-info mb-3">
-                                        <strong>💳 Pago con Mercado Pago</strong><br />
-                                        Serás redirigido a la plataforma de Mercado Pago para completar el pago de forma segura.
-                                        Podrás pagar con tarjeta de crédito, débito, efectivo o código QR.
-                                    </div>
-                                )}
-
                                 {/* Referencia para YAPE / PLIN */}
                                 {esOfflineConRef && (
-                                    <div className="mb-3">
-                                        <label htmlFor="referencia" className="form-label">Referencia del pago</label>
+                                    <div className="payment-reference-section">
+                                        <label htmlFor="referencia" className="reference-label">
+                                            Comprobante de pago
+                                        </label>
                                         <input
                                             type="text"
-                                            className="form-control"
+                                            className="reference-input"
                                             id="referencia"
                                             value={referencia}
                                             onChange={(e) => setReferencia(e.target.value)}
-                                            placeholder="Número de operación"
+                                            placeholder="Ej: 123456789"
                                         />
-                                        <div className="mt-3 text-center">
+                                        <div className="qr-code-wrapper">
                                             <QRCodeCanvas
                                                 value={`Pago ${selectedMetodo.nombre} - S/ ${total.toFixed(2)} - Ref: ${referencia || 'N/A'}`}
-                                                size={180}
+                                                size={140}
                                                 bgColor="#ffffff"
-                                                fgColor="#000000"
+                                                fgColor="#003366"
                                                 level="L"
                                                 includeMargin={false}
                                             />
-                                            <p className="text-muted small mt-2">
-                                                Escanea para pagar con {selectedMetodo.nombre}
-                                            </p>
+                                            <p className="qr-hint">Escanea para pagar</p>
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="d-flex justify-content-between">
-                                    <strong>Total a pagar:</strong>
-                                    <strong className="text-success">S/ {total.toFixed(2)}</strong>
+                                {/* Aviso de Mercado Pago */}
+                                {esMercadoPago && (
+                                    <div className="payment-info-banner">
+                                        <strong>✓ Transacción segura</strong>
+                                        <p>Serás redirigido a Mercado Pago. Podrás pagar con tarjeta, efectivo o código QR.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* COLUMNA DERECHA: Resumen de Pago */}
+                            <div className="payment-summary-section">
+                                <h3 className="section-title">Resumen</h3>
+                                <div className="payment-summary-card">
+                                    <div className="summary-items">
+                                        {carrito.map((item, idx) => (
+                                            <div key={idx} className="summary-item">
+                                                <span className="item-name">{item.nombre}</span>
+                                                <span className="item-qty">x{item.cantidad}</span>
+                                                <span className="item-price">
+                                                    S/ {(item.precio * item.cantidad).toFixed(2)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="summary-divider"></div>
+
+                                    <div className="summary-footer">
+                                        <div className="summary-row">
+                                            <span>Subtotal:</span>
+                                            <span>S/ {(total / 1.18).toFixed(2)}</span>
+                                        </div>
+                                        <div className="summary-row">
+                                            <span>IGV (18%):</span>
+                                            <span>S/ {(total - total / 1.18).toFixed(2)}</span>
+                                        </div>
+                                        <div className="summary-total">
+                                            <span>TOTAL A PAGAR</span>
+                                            <span className="total-amount">S/ {total.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        className={`payment-confirm-btn ${loading ? 'loading' : ''}`}
+                                        onClick={handleConfirmar}
+                                        disabled={loading || !selectedMetodo}
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <span className="spinner-small"></span> Procesando...
+                                            </>
+                                        ) : (
+                                            <>
+                                                🔒 Confirmar Pago
+                                            </>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        className="payment-cancel-btn"
+                                        onClick={onClose}
+                                        disabled={loading}
+                                    >
+                                        Cancelar
+                                    </button>
                                 </div>
-                            </>
-                        )}
-                    </div>
-                    <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-success"
-                            onClick={handleConfirmar}
-                            disabled={loading || carrito.length === 0}
-                        >
-                            {loading
-                                ? 'Procesando...'
-                                : esMercadoPago
-                                    ? '💳 Pagar con Mercado Pago'
-                                    : 'Confirmar Pago'
-                            }
-                        </button>
-                    </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

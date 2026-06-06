@@ -197,15 +197,38 @@ public class MercadoPagoService {
     }
 
     /**
-     * Obtener información de un pago desde Mercado Pago
+     * Obtener información de un pago desde Mercado Pago (REAL-TIME)
+     * ✅ CORREGIDO: Validación mejorada de paymentId y reinicialización de token
+     * 
+     * @param paymentId ID del pago en Mercado Pago (debe ser numérico)
+     * @return Objeto Payment con estado real desde MP, o null si no existe
      */
     public Payment obtenerPago(String paymentId) {
         try {
+            // ✅ VALIDACIÓN: Asegurar que paymentId es numérico antes de convertir
+            if (paymentId == null || paymentId.isBlank()) {
+                logger.warn("obtenerPago(): paymentId es null o vacío");
+                return null;
+            }
+
+            // ✅ INICIALIZACIÓN: Reinicializar token para cada consulta (garantiza vigencia)
             MercadoPagoConfig.setAccessToken(accessToken);
             PaymentClient client = new PaymentClient();
-            return client.get(Long.parseLong(paymentId));
+
+            try {
+                Long paymentIdLong = Long.parseLong(paymentId);
+                Payment payment = client.get(paymentIdLong);
+
+                logger.debug("Pago obtenido de MP - ID: {}, Status: {}", paymentId,
+                        payment != null ? payment.getStatus() : "null");
+                return payment;
+            } catch (NumberFormatException nfe) {
+                logger.error("PaymentID inválido (no numérico): {}", paymentId);
+                return null;
+            }
         } catch (Exception e) {
-            logger.error("Error obteniendo pago {}: {}", paymentId, e.getMessage());
+            logger.error("Error obteniendo pago desde Mercado Pago - ID: {}, Mensaje: {}",
+                    paymentId, e.getMessage());
             return null;
         }
     }
@@ -370,23 +393,80 @@ public class MercadoPagoService {
     }
 
     /**
-     * Verificar estado de una transacción por su transactionId o preferenceId
+     * Verificar estado REAL de una transacción consultando DIRECTAMENTE a Mercado
+     * Pago
+     * ✅ CORREGIDO: Ahora consulta el estado real de MP, no solo de BD
+     * 
+     * FLUJO:
+     * 1. Buscar transacción en BD por transactionId o preferenceId
+     * 2. Si existe transactionId (paymentId), consultar estado REAL en MP
+     * 3. Si MP devuelve información, actualizar la BD
+     * 4. Devolver estado actualizado
      */
     public MercadoPagoResponseDTO verificarEstado(String transactionId) {
         try {
-            // Primero buscar por transactionId (paymentId), si no por preferenceId
+            // ✅ PASO 1: Buscar transacción en BD por transactionId (paymentId) o
+            // preferenceId
             TransaccionPago transaccion = transaccionRepo.findByTransactionId(transactionId)
                     .or(() -> transaccionRepo.findByPreferenceId(transactionId))
                     .orElseThrow(() -> new RuntimeException("Transacción no encontrada: " + transactionId));
 
-            MercadoPagoResponseDTO response = new MercadoPagoResponseDTO();
+            // ✅ PASO 2: Si existe transactionId, consultar estado REAL en Mercado Pago
+            if (transaccion.getTransactionId() != null && !transaccion.getTransactionId().isBlank()) {
+                Payment paymentReal = obtenerPago(transaccion.getTransactionId());
 
-            // Usar transactionId si existe, sino el preferenceId como referencia
+                if (paymentReal != null) {
+                    logger.info("Estado REAL de MP obtenido - PaymentID: {}, Status: {}",
+                            transaccion.getTransactionId(), paymentReal.getStatus());
+
+                    // ✅ PASO 3: Sincronizar estado con BD si cambió
+                    String statusMP = paymentReal.getStatus();
+                    EstadoTransaccion estadoActual = transaccion.getEstadoTransaccion();
+
+                    // Actualizar solo si el estado cambió (ej: pending → approved)
+                    if (!esEstadoConsistente(statusMP, estadoActual)) {
+                        logger.info("Sincronizando estado - BD: {}, MP: {}", estadoActual, statusMP);
+
+                        // Actualizar transacción con el estado real de MP
+                        switch (statusMP) {
+                            case "approved":
+                                transaccion.setEstadoTransaccion(EstadoTransaccion.EXITOSO);
+                                if (transaccion.getFechaConfirmacion() == null) {
+                                    transaccion.setFechaConfirmacion(LocalDateTime.now());
+                                }
+                                break;
+                            case "pending":
+                            case "in_process":
+                                transaccion.setEstadoTransaccion(EstadoTransaccion.EN_PROCESO);
+                                break;
+                            case "rejected":
+                            case "cancelled":
+                                transaccion.setEstadoTransaccion(EstadoTransaccion.FALLIDO);
+                                break;
+                            case "refunded":
+                                transaccion.setEstadoTransaccion(EstadoTransaccion.REEMBOLSADO);
+                                break;
+                            default:
+                                logger.warn("Estado MP desconocido: {}", statusMP);
+                        }
+
+                        transaccion.setFechaActualizacion(LocalDateTime.now());
+                        transaccionRepo.save(transaccion);
+                        logger.info("Transacción sincronizada - Nuevo estado BD: {}",
+                                transaccion.getEstadoTransaccion());
+                    }
+                } else {
+                    logger.warn("No se pudo obtener pago desde MP - ID: {}",
+                            transaccion.getTransactionId());
+                }
+            }
+
+            // ✅ PASO 4: Construir respuesta con estado actualizado
+            MercadoPagoResponseDTO response = new MercadoPagoResponseDTO();
             String txId = transaccion.getTransactionId() != null
                     ? transaccion.getTransactionId()
                     : transaccion.getPreferenceId();
             response.setTransactionId(txId);
-
             response.setVentaId(transaccion.getVenta().getId());
             response.setMonto(transaccion.getMonto());
             response.setEstado(transaccion.getEstadoTransaccion().toString());
@@ -402,6 +482,26 @@ public class MercadoPagoService {
         } catch (Exception e) {
             logger.error("Error verificando estado: {}", e.getMessage());
             throw new RuntimeException("Error verificando estado: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * ✅ MÉTODO AUXILIAR: Comparar si estado de BD es consistente con estado de MP
+     */
+    private boolean esEstadoConsistente(String statusMP, EstadoTransaccion estadoBD) {
+        switch (statusMP) {
+            case "approved":
+                return estadoBD == EstadoTransaccion.EXITOSO;
+            case "pending":
+            case "in_process":
+                return estadoBD == EstadoTransaccion.EN_PROCESO;
+            case "rejected":
+            case "cancelled":
+                return estadoBD == EstadoTransaccion.FALLIDO;
+            case "refunded":
+                return estadoBD == EstadoTransaccion.REEMBOLSADO;
+            default:
+                return true; // Si estado es desconocido, asumir consistencia
         }
     }
 
