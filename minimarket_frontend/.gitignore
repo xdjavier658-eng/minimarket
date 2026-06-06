@@ -28,6 +28,11 @@ target/
 *.jar
 *.war
 *.ear
+
+# Environment Variables (CRÍTICO: NUNCA subir credenciales)
+.env
+.env.local
+.env.*.local
 *.class
 
 # Spring Boot

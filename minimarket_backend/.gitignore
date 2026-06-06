@@ -18,3 +18,8 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment Variables (CRÍTICO: NUNCA subir credenciales)
+.env
+.env.local
+.env.*.local
