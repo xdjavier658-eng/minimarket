@@ -1,6 +1,15 @@
 // src/api/api.js
+//
+// CONFIGURACIÓN DE VARIABLES DE ENTORNO
+// Las variables VITE_* se definen en .env y .env.example
+// ✅ Desarrollo: Lee de .env local
+// ✅ Producción: Las variables se inyectan en tiempo de build
 
-const API_URL = "/api";
+// URL base del API - Lee desde variable de entorno o usa /api como fallback
+// Si VITE_API_URL está vacío o no existe, usa /api (proxy local)
+const API_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : "/api";
 
 /**
  * Login de usuario
@@ -75,7 +84,9 @@ export async function fetchWithAuth(endpoint, options = {}) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
+      throw new Error(
+        data.message || `Error ${response.status}: ${response.statusText}`,
+      );
     }
 
     return data;
@@ -109,18 +120,18 @@ export async function fetchPublic(endpoint, options = {}) {
 
 // Obtener métodos de pago (con autenticación - para admin)
 export async function getMetodosPago() {
-  return fetchWithAuth('/test/pagos/metodos');
+  return fetchWithAuth("/test/pagos/metodos");
 }
 
 // Obtener métodos de pago (público - para clientes en el modal de compra)
 export async function getMetodosPagoPublic() {
-  return fetchPublic('/test/pagos/metodos');
+  return fetchPublic("/test/pagos/metodos");
 }
 
 // Finalizar venta (admin/vendedor autenticado)
 export async function finalizarVenta(data) {
-  return fetchWithAuth('/ventas/finalizar', {
-    method: 'POST',
+  return fetchWithAuth("/ventas/finalizar", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -128,8 +139,8 @@ export async function finalizarVenta(data) {
 // Finalizar venta desde el catálogo público (sin JWT)
 // Usa el usuario genérico "kiosko" en el backend
 export async function finalizarVentaPublico(data) {
-  return fetchPublic('/ventas/finalizar-publico', {
-    method: 'POST',
+  return fetchPublic("/ventas/finalizar-publico", {
+    method: "POST",
     body: JSON.stringify(data),
   });
 }
@@ -155,7 +166,7 @@ export async function uploadImage(file) {
   const response = await fetch(`${API_URL}/media/upload`, {
     method: "POST",
     headers: {
-      "Authorization": token ? `Bearer ${token}` : ""
+      Authorization: token ? `Bearer ${token}` : "",
     },
     body: formData,
   });

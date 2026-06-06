@@ -31,6 +31,11 @@ target/
 
 # Environment Variables (CRÍTICO: NUNCA subir credenciales)
 .env
+# ✅ EXCEPCIÓN: .env.example SÍ se sube a GitHub (plantilla de ejemplo)
+!.env.example
+
+# Environment Variables (CRÍTICO: NUNCA subir credenciales)
+.env
 .env.local
 .env.*.local
 *.class
