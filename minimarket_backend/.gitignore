@@ -23,3 +23,5 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+# ✅ EXCEPCIÓN: .env.example SÍ se sube a GitHub (plantilla de ejemplo)
+!.env.example
