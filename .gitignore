@@ -42,6 +42,8 @@ uploads/**
 # Environment files
 .env
 .env.*
+# ✅ EXCEPCIÓN: .env.example archivos SÍ se suben a GitHub (plantillas)
+!.env.example
 
 # Temporary files
 tmp/
