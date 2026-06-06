@@ -3,9 +3,9 @@ spring:
     name: minimarket-backend
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/minimarket_db
-    username: postgres
-    password: Fabri12%
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/minimarket_db}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -40,9 +40,8 @@ server:
 
 # JWT CONFIGURATION
 jwt:
-  # ⚠️ CAMBIAR en producción por una clave más segura
-  secret: ${JWT_SECRET:minimarketSecretKey1234567890minimarketSecretKey1234567890}
-  expiration: 86400000  # 24 horas
+  secret: ${JWT_SECRET:CHANGE_ME_IN_PRODUCTION_VERY_LONG_SECRET_KEY_AT_LEAST_32_CHARS}
+  expiration: ${JWT_EXPIRATION:86400000}  # 24 horas en millisegundos
 
 # LOGGING
 logging:
@@ -62,10 +61,11 @@ logging:
 
 # MERCADO PAGO CONFIGURATION
 mercadopago:
-  access-token: ${MERCADOPAGO_ACCESS_TOKEN:TEST-0000000000000000-000000-00000000000000000000000000000000-000000000}
-  success-url: ${MERCADOPAGO_SUCCESS_URL:http://localhost:8080/pago-exitoso}
-  failure-url: ${MERCADOPAGO_FAILURE_URL:http://localhost:8080/pago-fallido}
-  pending-url: ${MERCADOPAGO_PENDING_URL:http://localhost:8080/pago-pendiente}
-  notification-url: ${MERCADOPAGO_NOTIFICATION_URL:https://mi-dominio.com/api/mercadopago/webhook}
-  expiration-minutes: 30
-  sandbox: true
+  access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+  public-key: ${MERCADOPAGO_PUBLIC_KEY}
+  success-url: ${MERCADOPAGO_SUCCESS_URL:http://localhost:3000/pago-exitoso}
+  failure-url: ${MERCADOPAGO_FAILURE_URL:http://localhost:3000/pago-fallido}
+  pending-url: ${MERCADOPAGO_PENDING_URL:http://localhost:3000/pago-pendiente}
+  notification-url: ${MERCADOPAGO_NOTIFICATION_URL:http://localhost:8080/api/mercadopago/webhook}
+  expiration-minutes: ${MERCADOPAGO_EXPIRATION_MINUTES:30}
+  sandbox: ${MERCADOPAGO_SANDBOX:true}
