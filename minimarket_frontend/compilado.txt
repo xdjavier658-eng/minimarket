@@ -1,0 +1,609 @@
+================================================================================
+PROYECTO: minimarket_frontend
+RUTA: C:\Users\Nvidia\Desktop\minimarket_frontend
+FECHA: Fri Feb 20 23:06:12 GMT-05:00 2026
+================================================================================
+
+
+[FILE] eslint.config.js
+------------------------------------------------------------
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{js,jsx}'],
+    extends: [
+      js.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        ecmaFeatures: { jsx: true },
+        sourceType: 'module',
+      },
+    },
+    rules: {
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    },
+  },
+])
+
+------------------------------------------------------------
+
+[DIR] imagen/
+
+[FILE] index.html
+------------------------------------------------------------
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>minimarket_frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+
+
+------------------------------------------------------------
+
+
+[FILE] src/App.css
+------------------------------------------------------------
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+------------------------------------------------------------
+
+[DIR] src/assets/
+
+[DIR] src/assets/css/
+
+[FILE] src/assets/css/dashboard.css
+------------------------------------------------------------
+/* src/pages/dashboard.css */
+
+.hover-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.hover-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+  border-color: rgba(0,0,0,0.1);
+}
+
+.stat-card {
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.stat-card .card-body {
+  padding: 1.5rem;
+}
+
+.stat-icon {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
+.welcome-banner {
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.1);
+}
+
+.welcome-banner > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Animaciones */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.loading-pulse {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.card {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Estilos para badges */
+.badge {
+  padding: 0.5em 0.8em;
+  font-weight: 500;
+  border-radius: 30px;
+}
+
+/* Tabla responsive */
+.table th {
+  border-top: none;
+  font-weight: 600;
+  color: #4e73df;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Personalizar scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+------------------------------------------------------------
+
+[DIR] src/assets/js/
+
+[DIR] src/components/
+
+[DIR] src/context/
+
+[DIR] src/hooks/
+
+[FILE] src/hooks/useProductos.js
+------------------------------------------------------------
+// src/hooks/useProductos.js
+import { useState, useEffect } from 'react';
+import { fetchWithAuth } from '../api/api';
+
+export function useProductos() {
+  const [productos, setProductos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Listar productos
+  const listarProductos = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchWithAuth('/productos');
+      setProductos(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Crear producto
+  const crearProducto = async (producto) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchWithAuth('/productos', {
+        method: 'POST',
+        body: JSON.stringify(producto),
+      });
+      // Opcional: actualizar la lista local
+      setProductos(prev => [...prev, data]);
+      return data;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar productos al montar el hook
+  useEffect(() => {
+    listarProductos();
+  }, []);
+
+  return {
+    productos,
+    loading,
+    error,
+    listarProductos,
+    crearProducto,
+  };
+}
+------------------------------------------------------------
+
+[FILE] src/index.css
+------------------------------------------------------------
+*,
+::before,
+::after {
+  box-sizing: border-box;
+
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+ }
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+@media print {
+  body {
+    background: white;
+  }
+
+  button {
+    display: none;
+  }
+}
+
+.ticket-container {
+  max-width: 400px;
+  font-family: "Courier New", monospace;
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  margin: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ticket-container h4 {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.ticket-container table {
+  font-size: 0.85rem;
+}
+
+.ticket-container .btn {
+  min-width: 100px;
+}
+
+.card-body > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-body > div > div {
+  display: flex;
+  align-items: center;
+}
+
+.btn-outline-secondary {
+  padding: 0 10px;
+}
+
+
+
+------------------------------------------------------------
+
+[DIR] src/pages/
+
+[FILE] src/pages/login.css
+------------------------------------------------------------
+
+.placeholder-small::placeholder {
+  font-size: 1rem;
+  color: #6c757d; /* gris Bootstrap */
+}
+
+body {
+    background: #eaeaea;
+    min-height: 100vh;
+}
+
+.card {
+    border-radius: 15px !important;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 120px;
+}
+
+.logo h2 {
+    color: #2e7d32;
+    margin-top: 10px;
+}
+
+/* Estilos para los input-group */
+.input-group-text {
+    background: #f3f3f3;
+    border: none;
+    border-radius: 8px 0 0 8px !important;
+}
+
+.form-control {
+    background: #f3f3f3;
+    border: none;
+    border-radius: 0 8px 8px 0 !important;
+}
+
+.form-control:focus {
+    background: #f3f3f3;
+    box-shadow: none;
+    border: none;
+}
+
+.btn-success {
+    background: linear-gradient(#4caf50, #2e7d32) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 16px;
+}
+
+.btn-success:hover {
+    opacity: 0.9;
+}
+
+#mensaje {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+
+
+
+------------------------------------------------------------
+
+[DIR] src/routes/
+
+[FILE] TreePrinter.java
+------------------------------------------------------------
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+public class TreePrinter {
+
+    // Carpetas a ignorar
+    private static final Set<String> IGNORED_DIRS = new HashSet<>(Arrays.asList(
+            ".git",
+            ".vscode",
+            ".idea",
+            "target",
+            "node_modules",
+            "dist",
+            "build"
+    ));
+
+    // Extensiones de archivos a ignorar
+    private static final Set<String> IGNORED_EXTENSIONS = new HashSet<>(Arrays.asList(
+            ".class",
+            ".log",
+            ".iml",
+            ".lock",
+            ".tmp"
+    ));
+
+    // Archivos específicos a ignorar
+    private static final Set<String> IGNORED_FILES = new HashSet<>(Arrays.asList(
+            ".DS_Store"
+    ));
+
+    public static void main(String[] args) {
+        File root = args.length > 0 ? new File(args[0]) : new File(".");
+
+        if (!root.exists()) {
+            System.err.println("La ruta no existe");
+            return;
+        }
+
+        File output = new File("arbol.txt");
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(output))) {
+            writer.println(root.getCanonicalFile().getName());
+            printTree(root, "", writer);
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+            return;
+        }
+
+        System.out.println("Archivo arbol.txt creado en: " + output.getAbsolutePath());
+    }
+
+    private static void printTree(File dir, String prefix, PrintWriter writer) {
+        File[] files = dir.listFiles();
+        if (files == null) return;
+
+        Arrays.sort(files, (a, b) -> {
+            if (a.isDirectory() && !b.isDirectory()) return -1;
+            if (!a.isDirectory() && b.isDirectory()) return 1;
+            return a.getName().compareToIgnoreCase(b.getName());
+        });
+
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            boolean isLast = (i == files.length - 1);
+
+            if (shouldIgnore(file)) continue;
+
+            writer.println(prefix +
+                    (isLast ? "\\-- " : "|-- ") +
+                    file.getName());
+
+            if (file.isDirectory()) {
+                printTree(
+                        file,
+                        prefix + (isLast ? "    " : "|   "),
+                        writer
+                );
+            }
+        }
+    }
+
+    private static boolean shouldIgnore(File file) {
+        String name = file.getName();
+
+        if (file.isDirectory()) {
+            return IGNORED_DIRS.contains(name);
+        }
+
+        if (IGNORED_FILES.contains(name)) {
+            return true;
+        }
+
+        for (String ext : IGNORED_EXTENSIONS) {
+            if (name.endsWith(ext)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+------------------------------------------------------------
+
+[FILE] vite.config.js
+------------------------------------------------------------
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+})
+
+------------------------------------------------------------
+
+================================================================================
+ESTADISTICAS:
+  Carpetas analizadas: 13
+  Archivos incluidos: 14
+  Tamanio total: 138505 caracteres
+================================================================================

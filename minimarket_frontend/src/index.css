@@ -1,0 +1,325 @@
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+/* ========== PRINT ========== */
+@media print {
+  body {
+    background: white;
+  }
+  button {
+    display: none;
+  }
+}
+
+/* ========== TICKET ========== */
+.ticket-container {
+  max-width: 400px;
+  width: 100%;
+  font-family: "Courier New", monospace;
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  margin: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ticket-container h4 {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.ticket-container table {
+  font-size: 0.85rem;
+}
+
+.ticket-container .btn {
+  min-width: 100px;
+}
+
+/* ========== CARRITO ITEMS (catálogo) ========== */
+.card-body > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-body > div > div {
+  display: flex;
+  align-items: center;
+}
+
+.btn-outline-secondary {
+  padding: 0 10px;
+}
+
+/* ========== CATÁLOGO PÚBLICO — NAVBAR ========== */
+.catalog-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.catalog-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ========== CARRITO MÓVIL — Botón flotante ========== */
+.cart-toggle-btn {
+  display: none;
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1050;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: none;
+  padding: 0;
+  line-height: 60px;
+  text-align: center;
+}
+
+.cart-overlay {
+  display: none;
+}
+
+/* ========== RESPONSIVE — MOBILE (< 768px) ========== */
+@media (max-width: 767.98px) {
+
+  /* --- Catálogo Público --- */
+  .catalog-navbar .navbar-brand {
+    font-size: 1.1rem;
+  }
+
+  .catalog-navbar-actions .btn {
+    font-size: 0.75rem;
+    padding: 0.3em 0.6em;
+  }
+
+  .catalog-navbar-actions .fw-bold {
+    font-size: 0.8rem;
+  }
+
+  /* Carrito: botón flotante visible, sidebar oculto */
+  .cart-toggle-btn {
+    display: block;
+  }
+
+  .cart-sidebar {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 85%;
+    max-width: 360px;
+    height: 100vh;
+    z-index: 1060;
+    overflow-y: auto;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  .cart-sidebar.open {
+    display: block;
+  }
+
+  .cart-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1055;
+  }
+
+  .cart-overlay.open {
+    display: block;
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  /* Productos: grid 2 columnas en móvil */
+  .catalog-products .row-cols-lg-3 {
+    --bs-columns: 2;
+  }
+
+  /* Categorías: texto más pequeño */
+  .category-filters .btn {
+    font-size: 0.75rem;
+    padding: 0.25em 0.5em;
+  }
+
+  /* --- Login --- */
+  .login-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0.5rem;
+  }
+
+  /* --- Dashboard --- */
+  .dashboard-welcome .display-1 {
+    font-size: 2.5rem;
+  }
+
+  .dashboard-welcome .display-6 {
+    font-size: 1.2rem;
+  }
+
+  .dashboard-welcome .lead {
+    font-size: 0.85rem;
+  }
+
+  /* Stat cards: más compactas */
+  .stat-label {
+    font-size: 0.65rem !important;
+    margin: 0 !important;
+  }
+
+  .stat-value {
+    font-size: 1.1rem !important;
+  }
+
+  .stat-icon-wrapper {
+    display: none;
+  }
+
+  /* --- User Register --- */
+  .user-register-card {
+    padding: 1rem !important;
+  }
+
+  /* --- Ticket --- */
+  .ticket-container {
+    margin-top: 1rem !important;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .ticket-container h4 {
+    font-size: 1.1rem;
+  }
+
+  .ticket-container table {
+    font-size: 0.75rem;
+  }
+
+  /* --- Tablas generales --- */
+  .table th,
+  .table td {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.35rem;
+    white-space: nowrap;
+  }
+
+  /* --- Container padding reducido --- */
+  .container-fluid {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* ========== RESPONSIVE — SMALL PHONES (< 576px) ========== */
+@media (max-width: 575.98px) {
+  .catalog-products .row-cols-md-2 {
+    --bs-columns: 1;
+  }
+
+  .catalog-navbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dashboard-welcome .d-flex {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .dashboard-welcome .display-1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .dashboard-welcome .me-3 {
+    margin-right: 0 !important;
+  }
+}
+
+/* ========== RESPONSIVE — TABLET (768px - 1024px) ========== */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .catalog-navbar-actions .btn {
+    font-size: 0.85rem;
+  }
+}

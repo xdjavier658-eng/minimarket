@@ -1,0 +1,58 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / editor
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Java / Maven
+/target/
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+.classpath
+.project
+.settings/
+generated-sources/
+
+# Spring / build artifacts
+*.log
+
+# Node / frontend
+/minimarket_frontend/node_modules/
+/minimarket_frontend/dist/
+/minimarket_frontend/.vite/
+node_modules/
+dist/
+.vite/
+
+# Logs, uploads, and user data
+logs/
+/logs/
+uploads/
+uploads/**
+
+# Environment files
+.env
+.env.*
+
+# Temporary files
+tmp/
+temp/
+.cache/
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Misc
+# Ignore compiled or generated IDE files
+*.class
+*.log

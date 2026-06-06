@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: minimarket-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/minimarket_db
+    username: postgres
+    password: Fabri12%
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+
+server:
+  port: 8080
+  # ❌ ELIMINAR esta línea para que /api no se duplique
+  # servlet:
+  #   context-path: /api
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param
+
+# JWT CONFIGURATION
+jwt:
+  # ⚠️ CAMBIAR en producción por una clave más segura
+  secret: ${JWT_SECRET:minimarketSecretKey1234567890minimarketSecretKey1234567890}
+  expiration: 86400000  # 24 horas
+
+# LOGGING
+logging:
+  level:
+    root: INFO
+    com.minimarket: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/minimarket-backend.log
+    max-size: 10MB
+    max-history: 30
+
+# MERCADO PAGO CONFIGURATION
+mercadopago:
+  access-token: ${MERCADOPAGO_ACCESS_TOKEN:TEST-0000000000000000-000000-00000000000000000000000000000000-000000000}
+  success-url: ${MERCADOPAGO_SUCCESS_URL:http://localhost:8080/pago-exitoso}
+  failure-url: ${MERCADOPAGO_FAILURE_URL:http://localhost:8080/pago-fallido}
+  pending-url: ${MERCADOPAGO_PENDING_URL:http://localhost:8080/pago-pendiente}
+  notification-url: ${MERCADOPAGO_NOTIFICATION_URL:https://mi-dominio.com/api/mercadopago/webhook}
+  expiration-minutes: 30
+  sandbox: true

@@ -1,0 +1,144 @@
+/* src/pages/productRegister.css */
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.3s ease-out;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-header {
+  border-bottom: none;
+  font-weight: 600;
+}
+
+/* Input groups */
+.input-group-text {
+  border: none;
+  background: #f8f9fa;
+  color: #28a745;
+}
+
+.form-control {
+  border: 1px solid #e9ecef;
+  padding: 0.6rem 1rem;
+  transition: all 0.2s;
+}
+
+.form-control:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+/* Badges */
+.badge {
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 30px;
+}
+
+.badge.bg-success {
+  background-color: #28a745 !important;
+}
+
+.badge.bg-warning {
+  background-color: #ffc107 !important;
+  color: #212529;
+}
+
+.badge.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+.badge.bg-light {
+  background: #f8f9fa !important;
+  color: #495057;
+  border: 1px solid #e9ecef;
+}
+
+/* Tabla */
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  color: #28a745;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #28a745;
+  padding: 1rem;
+}
+
+.table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(40, 167, 69, 0.02);
+}
+
+/* Fondos suaves */
+.bg-success-soft {
+  background: rgba(40, 167, 69, 0.1);
+  border-radius: 8px;
+}
+
+/* Botones */
+.btn-success {
+  background: linear-gradient(135deg, #28a745, #218838);
+  border: none;
+  transition: all 0.3s;
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-outline-secondary {
+  border: 1px solid #e9ecef;
+  color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+  background: #f8f9fa;
+  border-color: #ced4da;
+  transform: translateY(-2px);
+}
+
+/* Spinner */
+.spinner-border.text-success {
+  color: #28a745 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .table td {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}
